@@ -1,8 +1,6 @@
 # Overmind Homebrew Tap
 
-This repo contains Overmind's homebrew packages. PRs are generated from the [https://github.com/overmindtech/cli](https://github.com/overmindtech/cli) repo. Once PRs have been reviewed and merged, they should be labeled with `pr-pull` which will trigger a workflows that pulls the compiled bottles into the current release.
-
-They should be labeled with `TODO` which DOES SOMETHING TO DO WITH BOTTLES?
+This repo contains Overmind's homebrew packages. PRs are generated from the [https://github.com/overmindtech/cli](https://github.com/overmindtech/cli) repo. Once PRs have had all tests pass, they should be labeled with `pr-pull` which will trigger a workflow that pulls the compiled bottles into the current release and closes the PR. Do not merge PRs directly.
 
 ## How do I install these formulae?
 
