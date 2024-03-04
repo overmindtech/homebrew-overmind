@@ -1,8 +1,8 @@
 class OvermindCli < Formula
   desc "CLI to interact with the Overmind API"
   homepage "https://overmind.tech/"
-  url "https://github.com/overmindtech/cli/archive/refs/tags/v0.25.15.tar.gz"
-  sha256 "18cf5a9d38dab47f3e2c50bf70d009286488c4d5dbd55fd151440fd4c053ab59"
+  url "https://github.com/overmindtech/cli/archive/refs/tags/v0.25.16.tar.gz"
+  sha256 "ebc7ac8a39c4459beb63dbc070059e5f83ddfc868d3c1c657b5a59dbe1c76305"
   license "Apache-2.0"
 
   depends_on "go" => :build
