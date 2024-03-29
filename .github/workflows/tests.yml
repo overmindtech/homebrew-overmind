@@ -36,7 +36,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         # Do not upgrade to v4 due to https://github.com/actions/upload-artifact/issues/478
         # Homebrew will need to solve this in the `brew pr-pull` command
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bottles
           path: '*.bottle.*'
