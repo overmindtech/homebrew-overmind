@@ -50,29 +50,38 @@ jobs:
       issues: write
     if: github.event_name == 'pull_request'
     steps:
-      # Validate that there is only one change, and that the file is Formula/overmind-cli.rb
-      - name: Validate PR
+      # Combined Validation to make sure that we only auto-label on PRs that bump the version and nothing else
+      - name: Validate PR and File Content
+        id: validate
         run: |
+          set -e
+          # By default, set validation to pass
+          VALIDATION_STATUS=pass
+          
+          # Validate the number of changed files
           if [ $(git diff --name-only HEAD^ HEAD | wc -l) -ne 1 ]; then
             echo "More than one file changed"
-            exit 1
+            VALIDATION_STATUS=fail
+          else
+            # Validate the specific file change
+            if [ $(git diff --name-only HEAD^ HEAD | grep -c "Formula/overmind-cli.rb") -ne 1 ]; then
+              echo "File changed is not Formula/overmind-cli.rb"
+              VALIDATION_STATUS=fail
+            fi
+
+            # Validate file content
+            if ! grep -qE '^  url "https://github.com/overmindtech/cli/archive/refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$' Formula/overmind-cli.rb; then
+              echo "File does not contain correct URL format"
+              VALIDATION_STATUS=fail
+            fi
           fi
-          if [ $(git diff --name-only HEAD^ HEAD | grep -c "Formula/overmind-cli.rb") -ne 1 ]; then
-            echo "File changed is not Formula/overmind-cli.rb"
-            exit 1
-          fi
-      # Validate that the url line in the current version of the file still has the
-      # correct URL and that it hasn't been hjacked i.e. is should contain the line: 
-      # 'url "https://github.com/overmindtech/cli/archive/refs/tags/v{version}.tar.gz"'
-      - name: Validate File Content
-        run: |
-          if ! grep -qE '^  url "https://github.com/overmindtech/cli/archive/refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$' Formula/overmind-cli.rb; then
-            echo "File does not contain correct URL format"
-            exit 1
-          fi
-      
-      # Tag this PR with pr-pull label
+
+          # Set the output
+          echo "validation_status=$VALIDATION_STATUS" >> "$GITHUB_OUTPUT"
+
+      # Tag this PR with pr-pull label only if validation passed
       - name: Tag PR with pr-pull label
+        if: steps.validate.outputs.validation_status == 'pass'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -83,3 +92,8 @@ jobs:
               repo: context.repo.repo,
               labels: ['pr-pull']
             })
+
+      # Log message if validation failed but step marked as succeeded
+      - name: Log validation result
+        if: steps.validate.outputs.validation_status == 'fail'
+        run: echo "Validation failed, skipping label addition but marking step as success"
