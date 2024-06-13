@@ -41,3 +41,45 @@ jobs:
         with:
           name: bottles
           path: '*.bottle.*'
+  auto-merge:
+    runs-on: ubuntu-latest
+    needs: test-bot
+    permissions: 
+      contents: write
+      pull-requests: write
+      issues: write
+    if: github.event_name == 'pull_request'
+    steps:
+      # Validate that there is only one change, and that the file is Formula/overmind-cli.rb
+      - name: Validate PR
+        run: |
+          if [ $(git diff --name-only HEAD^ HEAD | wc -l) -ne 1 ]; then
+            echo "More than one file changed"
+            exit 1
+          fi
+          if [ $(git diff --name-only HEAD^ HEAD | grep -c "Formula/overmind-cli.rb") -ne 1 ]; then
+            echo "File changed is not Formula/overmind-cli.rb"
+            exit 1
+          fi
+      # Validate that the url line in the current version of the file still has the
+      # correct URL and that it hasn't been hjacked i.e. is should contain the line: 
+      # 'url "https://github.com/overmindtech/cli/archive/refs/tags/v{version}.tar.gz"'
+      - name: Validate File Content
+        run: |
+          if ! grep -qE '^  url "https://github.com/overmindtech/cli/archive/refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$' Formula/overmind-cli.rb; then
+            echo "File does not contain correct URL format"
+            exit 1
+          fi
+      
+      # Tag this PR with pr-pull label
+      - name: Tag PR with pr-pull label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['pr-pull']
+            })
