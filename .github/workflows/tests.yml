@@ -61,36 +61,64 @@ jobs:
       - name: Validate File Changes
         id: validate
         run: |
+          #!/bin/bash
+
+          set -e
+          set -x
+
+          # Fetch the latest changes from the remote main branch
+          git fetch origin main
+
           # Get the list of changed files in the PR compared to the main branch
           CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
-  
-          # Check if only one file is changed
+
+          # Check if only one file is changed and if that file is Formula/overmind-cli.rb
           if [[ "$CHANGED_FILES" != "Formula/overmind-cli.rb" ]]; then
-            echo "validation_status=fail" >> $GITHUB_OUTPUT
-            exit 0
+              echo "More than one file is changed or the changed file is not Formula/overmind-cli.rb"
+              echo "validation_status=fail" >> $GITHUB_OUTPUT
+              exit 0
           fi
-  
-          # Get the diff for the file compared to the main branch
-          git diff origin/main...HEAD -- Formula/overmind-cli.rb > diff
-  
-          # Regular expressions for matching the URL and SHA256 lines
-          URL_REGEX='^+\s*url\s*"https://github.com/overmindtech/cli/archive/refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$'
-          SHA256_REGEX='^+\s*sha256\s*"[a-f0-9]{64}"$'
-  
-          # Check if URL and SHA256 lines are the only changes
-          grep "$URL_REGEX" diff
-          URL_LINE_CHECK=$?
-          
-          grep "$SHA256_REGEX" diff
-          SHA256_LINE_CHECK=$?
-          
-          grep -E '^[+-]' diff | grep -vE "$URL_REGEX|$SHA256_REGEX"
-          OTHER_CHANGES=$?
-          
-          if [[ "$URL_LINE_CHECK" -eq 0 && "$SHA256_LINE_CHECK" -eq 0 && "$OTHER_CHANGES" -ne 0 ]]; then
-            echo "validation_status=pass" >> $GITHUB_OUTPUT
+
+          # Get the added and removed lines separately
+          ADDED_LINES=$(git diff --unified=0 origin/main...HEAD Formula/overmind-cli.rb | grep -E "^\+" | grep -vE "^\+\+\+")
+          REMOVED_LINES=$(git diff --unified=0 origin/main...HEAD Formula/overmind-cli.rb | grep -E "^\-" | grep -vE "^\-\-\-")
+
+          # Count the added and removed lines
+          NUM_ADDED_LINES=$(echo "$ADDED_LINES" | wc -l)
+          NUM_REMOVED_LINES=$(echo "$REMOVED_LINES" | wc -l)
+
+          # Check if exactly four lines are changed in total (2 added and 2 removed)
+          TOTAL_CHANGED_LINES=$((NUM_ADDED_LINES + NUM_REMOVED_LINES))
+
+          if [[ "$TOTAL_CHANGED_LINES" -ne 4 ]]; then
+              echo "Exactly four lines should be changed in total (2 added and 2 removed)"
+              echo "validation_status=fail" >> $GITHUB_OUTPUT
+              exit 0
+          fi
+
+          # Define the regex patterns
+          URL_REGEX='^\+\s*url\s*"https:\/\/github.com\/overmindtech\/cli\/archive\/refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$'
+          SHA256_REGEX='^\+\s*sha256\s*"[a-f0-9]{64}"$'
+
+          # Check if added lines match the regex patterns
+          URL_MATCH=0
+          SHA256_MATCH=0
+
+          while IFS= read -r line; do
+              if [[ $line =~ $URL_REGEX ]]; then
+                  URL_MATCH=1
+              elif [[ $line =~ $SHA256_REGEX ]]; then
+                  SHA256_MATCH=1
+              fi
+          done <<< "$ADDED_LINES"
+
+          if [[ $URL_MATCH -eq 1 && $SHA256_MATCH -eq 1 ]]; then
+              echo "validation_status=pass" >> $GITHUB_OUTPUT
+              exit 0
           else
-            echo "validation_status=fail" >> $GITHUB_OUTPUT
+              echo "The added lines do not match the expected patterns"
+              echo "validation_status=fail" >> $GITHUB_OUTPUT
+              exit 0
           fi
 
       # Tag this PR with pr-pull label only if validation passed
@@ -106,8 +134,3 @@ jobs:
               repo: context.repo.repo,
               labels: ['pr-pull']
             })
-
-      # Log message if validation failed but step marked as succeeded
-      - name: Log validation result
-        if: steps.validate.outputs.validation_status == 'fail'
-        run: echo "Validation failed, skipping label addition but marking step as success"
