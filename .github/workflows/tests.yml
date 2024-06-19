@@ -54,76 +54,25 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
+      
+      - name: Check if PR is approved
+        id: check_approval
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            const approved = reviews.some(review => review.state === 'APPROVED');
+            return { approved: approved };
 
-      - name: Fetch main branch
-        run: git fetch origin main
-  
-      - name: Validate File Changes
-        id: validate
-        run: |
-          #!/bin/bash
-
-          set -e
-          set -x
-
-          # Fetch the latest changes from the remote main branch
-          git fetch origin main
-
-          # Get the list of changed files in the PR compared to the main branch
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
-
-          # Check if only one file is changed and if that file is Formula/overmind-cli.rb
-          if [[ "$CHANGED_FILES" != "Formula/overmind-cli.rb" ]]; then
-              echo "More than one file is changed or the changed file is not Formula/overmind-cli.rb"
-              echo "validation_status=fail" >> $GITHUB_OUTPUT
-              exit 0
-          fi
-
-          # Get the added and removed lines separately
-          ADDED_LINES=$(git diff --unified=0 origin/main...HEAD Formula/overmind-cli.rb | grep -E "^\+" | grep -vE "^\+\+\+")
-          REMOVED_LINES=$(git diff --unified=0 origin/main...HEAD Formula/overmind-cli.rb | grep -E "^\-" | grep -vE "^\-\-\-")
-
-          # Count the added and removed lines
-          NUM_ADDED_LINES=$(echo "$ADDED_LINES" | wc -l)
-          NUM_REMOVED_LINES=$(echo "$REMOVED_LINES" | wc -l)
-
-          # Check if exactly four lines are changed in total (2 added and 2 removed)
-          TOTAL_CHANGED_LINES=$((NUM_ADDED_LINES + NUM_REMOVED_LINES))
-
-          if [[ "$TOTAL_CHANGED_LINES" -ne 4 ]]; then
-              echo "Exactly four lines should be changed in total (2 added and 2 removed)"
-              echo "validation_status=fail" >> $GITHUB_OUTPUT
-              exit 0
-          fi
-
-          # Define the regex patterns
-          URL_REGEX='^\+\s*url\s*"https:\/\/github.com\/overmindtech\/cli\/archive\/refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$'
-          SHA256_REGEX='^\+\s*sha256\s*"[a-f0-9]{64}"$'
-
-          # Check if added lines match the regex patterns
-          URL_MATCH=0
-          SHA256_MATCH=0
-
-          while IFS= read -r line; do
-              if [[ $line =~ $URL_REGEX ]]; then
-                  URL_MATCH=1
-              elif [[ $line =~ $SHA256_REGEX ]]; then
-                  SHA256_MATCH=1
-              fi
-          done <<< "$ADDED_LINES"
-
-          if [[ $URL_MATCH -eq 1 && $SHA256_MATCH -eq 1 ]]; then
-              echo "validation_status=pass" >> $GITHUB_OUTPUT
-              exit 0
-          else
-              echo "The added lines do not match the expected patterns"
-              echo "validation_status=fail" >> $GITHUB_OUTPUT
-              exit 0
-          fi
-
-      # Tag this PR with pr-pull label only if validation passed
+      # Tag this PR with pr-pull label only if it has been approved
       - name: Tag PR with pr-pull label
-        if: steps.validate.outputs.validation_status == 'pass'
+        if: steps.check_approval.outputs.approved == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -133,4 +82,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['pr-pull']
-            })
+            });
