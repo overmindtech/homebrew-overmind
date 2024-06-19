@@ -71,18 +71,23 @@ jobs:
           fi
   
           # Get the diff for the file compared to the main branch
-          DIFF=$(git diff origin/main...HEAD -- Formula/overmind-cli.rb)
+          git diff origin/main...HEAD -- Formula/overmind-cli.rb > diff
   
           # Regular expressions for matching the URL and SHA256 lines
           URL_REGEX='^+\s*url\s*"https://github.com/overmindtech/cli/archive/refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz"$'
           SHA256_REGEX='^+\s*sha256\s*"[a-f0-9]{64}"$'
   
           # Check if URL and SHA256 lines are the only changes
-          URL_LINE_CHECK=$(echo "$DIFF" | grep "$URL_REGEX")
-          SHA256_LINE_CHECK=$(echo "$DIFF" | grep "$SHA256_REGEX")
-          OTHER_CHANGES=$(echo "$DIFF" | grep -E '^[+-]' | grep -vE "$URL_REGEX|$SHA256_REGEX")
-  
-          if [[ -n "$URL_LINE_CHECK" && -n "$SHA256_LINE_CHECK" && -z "$OTHER_CHANGES" ]]; then
+          grep "$URL_REGEX" diff
+          URL_LINE_CHECK=$?
+          
+          grep "$SHA256_REGEX" diff
+          SHA256_LINE_CHECK=$?
+          
+          grep -E '^[+-]' diff | grep -vE "$URL_REGEX|$SHA256_REGEX"
+          OTHER_CHANGES=$?
+          
+          if [[ "$URL_LINE_CHECK" -eq 0 && "$SHA256_LINE_CHECK" -eq 0 && "$OTHER_CHANGES" -ne 0 ]]; then
             echo "validation_status=pass" >> $GITHUB_OUTPUT
           else
             echo "validation_status=fail" >> $GITHUB_OUTPUT
