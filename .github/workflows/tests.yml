@@ -5,7 +5,7 @@ on:
       - main
     paths:
       # Only run this for changes to the formulas
-      - Formula/*.rb'
+      - "Formula/*.rb"
 jobs:
   test-bot:
     strategy:
