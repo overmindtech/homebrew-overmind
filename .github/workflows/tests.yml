@@ -1,8 +1,8 @@
 name: brew test-bot
 on:
   pull_request_target:
-    types:
-      - opened
+    branches:
+      - main
     paths:
       # Only run this for changes to the formula file
       - Formula/overmind-cli.rb'
