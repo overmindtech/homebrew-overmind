@@ -3,9 +3,9 @@ on:
   pull_request_target:
     branches:
       - main
-    paths:
+    # paths:
       # Only run this for changes to the formula file
-      - Formula/overmind-cli.rb'
+      # - Formula/overmind-cli.rb'
 jobs:
   test-bot:
     strategy:
@@ -52,9 +52,6 @@ jobs:
       issues: write
     if: github.event_name == 'pull_request'
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-      
       - name: Check if PR is approved
         id: check_approval
         uses: actions/github-script@v7
