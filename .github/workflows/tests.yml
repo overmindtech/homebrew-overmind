@@ -32,10 +32,10 @@ jobs:
       - run: brew test-bot --only-tap-syntax
 
       - run: brew test-bot --only-formulae --root-url=https://ghcr.io/v2/overmindtech/overmind
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request_target'
 
       - name: Upload bottles as artifact
-        if: always() && github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request_target'
         # Do not upgrade to v4 due to https://github.com/actions/upload-artifact/issues/478
         # Homebrew will need to solve this in the `brew pr-pull` command. We
         # have disabled rennovate for this repo to stop this gettung upgraded
