@@ -16,12 +16,13 @@ class OvermindCli < Formula
   depends_on "go" => :build
 
   def install
-    # Write the version of the package to a file so that it can be compiled into
-    # the binary
+    # Write the version of the package to an embedded file so that previous
+    # versions can be compiled.
     File.write("tracing/commit.txt", "v#{version}-brew")
     File.write("cmd/commit.txt", "v#{version}-brew")
 
-    system "go", "build", *std_go_args(ldflags: "-s -w", output: "overmind")
+    # Compile the correct version into the binary
+    system "go", "build", *std_go_args(ldflags: "-s -w -X github.com/overmindtech/cli/tracing.ServiceVersion=v#{version}-brew", output: "overmind")
 
     bin.install "overmind"
   end
