@@ -7,10 +7,10 @@ class OvermindCli < Formula
 
   bottle do
     root_url "https://ghcr.io/v2/overmindtech/overmind"
-    sha256 cellar: :any_skip_relocation, arm64_sequoia: "8bc3c37503a16ea7ea65929a0449716be434269c0f0d6bcbae66a36fc310333a"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "ace9f369558a965ad299ea433645f905a7c14010419484ffeecf21a484ff605f"
-    sha256 cellar: :any_skip_relocation, ventura:       "f3049fa1ce6d8543a99fc18317aa6ea32f2a643643800a6f48ad0e408d76bba5"
-    sha256 cellar: :any_skip_relocation, x86_64_linux:  "fb1109eed12d1a62e93a23586d55700bbb1424d9b495c92b9c08f1a066eaeaaf"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "3cf1016852c400c982f0a4fc46815af1a15852719248b052ef62f1a8354bcb21"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "e1e462308cbeeb6db8a1b29cc16c350f5cb3f7a03ded187fadd5ecda43fe56b2"
+    sha256 cellar: :any_skip_relocation, ventura:       "d0ef86534561853451da0dc1a6b7f1237247f31d3d8fcda72291cfe0186a42bc"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:  "ba349c28e043720266e915469d895105470d6a5fa10ec7b5958c6cbc5404f269"
   end
 
   depends_on "go" => :build
