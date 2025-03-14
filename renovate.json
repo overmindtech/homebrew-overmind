@@ -3,4 +3,5 @@
   "extends": [
     "local>overmindtech/renovate-config"
   ]
+  "prFooter": "{{#if pr.footer}}{{{pr.footer}}}\n\n{{> custom-pr-footer}}{{else}}{{> custom-pr-footer}}{{/if}}"
 }
