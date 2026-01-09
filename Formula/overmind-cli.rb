@@ -1,8 +1,8 @@
 class OvermindCli < Formula
   desc "CLI to interact with the Overmind API"
   homepage "https://overmind.tech/"
-  url "https://github.com/overmindtech/cli/archive/refs/tags/v1.11.1.tar.gz"
-  sha256 "ead600204e22b8587651226ba4a21c8e4c423522a0ca50bd57ab636ddb98706f"
+  url "https://github.com/overmindtech/cli/archive/refs/tags/v1.12.0.tar.gz"
+  sha256 "a112351dad730d1cb705b8247052038a4d2ee4a0d08402f206891846e1d81911"
   license "Apache-2.0"
 
   bottle do
