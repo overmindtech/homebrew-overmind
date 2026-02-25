@@ -16,7 +16,7 @@ class OvermindCli < Formula
 
   def install
     # Compile the correct version into the binary
-    system "go", "build", *std_go_args(ldflags: "-s -w -X github.com/overmindtech/cli/tracing.version=v#{version}-brew", output: "overmind")
+    system "go", "build", *std_go_args(ldflags: "-s -w -X github.com/overmindtech/cli/tracing.version=v#{version}", output: "overmind")
 
     bin.install "overmind"
   end
