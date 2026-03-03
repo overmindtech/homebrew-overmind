@@ -43,14 +43,31 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: test-bot
+    if: always()
     steps:
-      - uses: sarisia/actions-status-discord@v1
+      - name: Load Slack webhook secrets
+        uses: 1password/load-secrets-action@v3
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          content: "Homebrew bottling finished, time to add the `pr-pull` label! 🏷️"
-          title: "Homebrew Bottling"
-          description: "Pre-compuled bottles created and uploaded"
-          color: 0x5AB855
-          url: ${{ github.event.pull_request.html_url }}
-          username: GitHub Actions
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_RO_TOKEN }}
+          SLACK_WEBHOOK_ENG_BOTS: op://global/Slack GitOps Receiver App/eng_bots_hook_url
+          SLACK_WEBHOOK_ENGINEERING: op://global/Slack GitOps Receiver App/engineering_hook_url
+
+      - name: Notify Slack - Bottling Success
+        if: needs.test-bot.result == 'success'
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ env.SLACK_WEBHOOK_ENG_BOTS }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: ":white_check_mark: *Homebrew bottling finished*\nPre-compiled bottles created and uploaded. Time to add the `pr-pull` label!\n${{ github.event.pull_request.html_url }}"
+
+      - name: Notify Slack - Bottling Failure
+        if: needs.test-bot.result == 'failure'
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ env.SLACK_WEBHOOK_ENGINEERING }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: ":x: *Homebrew bottling failed*\ntest-bot failed for ${{ github.event.pull_request.html_url }}\nResults: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
