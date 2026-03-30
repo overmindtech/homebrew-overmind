@@ -46,7 +46,7 @@ jobs:
     if: always()
     steps:
       - name: Load Slack webhook secrets
-        uses: 1password/load-secrets-action@v3
+        uses: 1password/load-secrets-action@v4
         with:
           export-env: true
         env:
@@ -56,7 +56,7 @@ jobs:
 
       - name: Notify Slack - Bottling Success
         if: needs.test-bot.result == 'success'
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@v3.0.1
         with:
           webhook: ${{ env.SLACK_WEBHOOK_ENG_BOTS }}
           webhook-type: incoming-webhook
@@ -65,7 +65,7 @@ jobs:
 
       - name: Notify Slack - Bottling Failure
         if: needs.test-bot.result == 'failure'
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@v3.0.1
         with:
           webhook: ${{ env.SLACK_WEBHOOK_ENGINEERING }}
           webhook-type: incoming-webhook
