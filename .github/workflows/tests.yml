@@ -4,8 +4,8 @@ on:
     branches:
       - main
     paths:
-      # Only run this for changes to the formulas
       - "Formula/*.rb"
+      - ".github/workflows/tests.yml"
 jobs:
   test-bot:
     strategy:
@@ -13,6 +13,9 @@ jobs:
         # Homebrew 6.x brew doctor rejects glibc 2.35 on ubuntu-22.04 (Tier 2).
         os: [ubuntu-24.04, macos-14, macos-15]
     runs-on: ${{ matrix.os }}
+    env:
+      # Homebrew 6.x Linux sandbox breaks source builds in CI; see brew PR #22315.
+      HOMEBREW_NO_SANDBOX_LINUX: 1
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
