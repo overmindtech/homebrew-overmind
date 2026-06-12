@@ -10,7 +10,8 @@ jobs:
   test-bot:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14, macos-15]
+        # Homebrew 6.x brew doctor rejects glibc 2.35 on ubuntu-22.04 (Tier 2).
+        os: [ubuntu-24.04, macos-14, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
