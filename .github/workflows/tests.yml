@@ -13,17 +13,10 @@ jobs:
         # Homebrew 6.x brew doctor rejects glibc 2.35 on ubuntu-22.04 (Tier 2).
         os: [ubuntu-24.04, macos-14, macos-15]
     runs-on: ${{ matrix.os }}
-    env:
-      # Homebrew 6.x Linux sandbox breaks source builds in CI; see brew PR #22315.
-      HOMEBREW_NO_SANDBOX_LINUX: 1
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Install Linux dependencies
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y bubblewrap
 
       - name: Cache Homebrew Bundler RubyGems
         id: cache
