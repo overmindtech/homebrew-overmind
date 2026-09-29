@@ -47,7 +47,7 @@ jobs:
     if: always()
     steps:
       - name: Load Slack webhook secrets
-        uses: 1password/load-secrets-action@v4
+        uses: 1password/load-secrets-action@v5
         with:
           export-env: true
         env:
