@@ -11,7 +11,9 @@ jobs:
     strategy:
       matrix:
         # Homebrew 6.x brew doctor rejects glibc 2.35 on ubuntu-22.04 (Tier 2).
-        os: [ubuntu-24.04, macos-14, macos-15]
+        # GitHub retired macos-14 on 2026-11-02. The arm64_sequoia bottle
+        # built on macos-15 pours on newer macOS.
+        os: [ubuntu-24.04, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
