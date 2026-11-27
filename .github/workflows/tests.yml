@@ -59,7 +59,7 @@ jobs:
 
       - name: Notify Slack - Bottling Success
         if: needs.test-bot.result == 'success'
-        uses: slackapi/slack-github-action@v4.0.0
+        uses: slackapi/slack-github-action@v4.1.0
         with:
           webhook: ${{ env.SLACK_WEBHOOK_ENG_BOTS }}
           webhook-type: incoming-webhook
@@ -68,7 +68,7 @@ jobs:
 
       - name: Notify Slack - Bottling Failure
         if: needs.test-bot.result == 'failure'
-        uses: slackapi/slack-github-action@v4.0.0
+        uses: slackapi/slack-github-action@v4.1.0
         with:
           webhook: ${{ env.SLACK_WEBHOOK_ENGINEERING }}
           webhook-type: incoming-webhook
